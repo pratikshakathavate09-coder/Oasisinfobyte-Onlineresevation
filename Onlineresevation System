@@ -1,0 +1,222 @@
+import java.util.HashMap;
+import java.util.Scanner;
+
+// Ticket model
+class TicketReservation {
+    String pnr;
+    String passengerName;
+    int age;
+    String trainNo;
+    String trainName;
+    String classType;
+    String journeyDate;
+    String source;
+    String destination;
+
+    TicketReservation(String pnr, String passengerName, int age,
+                      String trainNo, String trainName, String classType,
+                      String journeyDate, String source, String destination) {
+        this.pnr = pnr;
+        this.passengerName = passengerName;
+        this.age = age;
+        this.trainNo = trainNo;
+        this.trainName = trainName;
+        this.classType = classType;
+        this.journeyDate = journeyDate;
+        this.source = source;
+        this.destination = destination;
+    }
+}
+
+public class RailwayReservationApp {
+
+    static Scanner sc = new Scanner(System.in);
+    static HashMap<String, TicketReservation> database = new HashMap<>();
+
+    static final String LOGIN_ID = "admin";
+    static final String PASSWORD = "1234";
+
+    static int pnrCounter = 1001;
+
+    // Fixed destinations
+    static String[] destinations = {
+            "Pune", "Mumbai", "Nagpur", "Nashik", "Kolhapur"
+    };
+
+    public static void main(String[] args) {
+
+        if (!login()) {
+            System.out.println("Invalid login. Program terminated.");
+            return;
+        }
+
+        int choice;
+        do {
+            System.out.println("\n===== RAILWAY RESERVATION SYSTEM =====");
+            System.out.println("1. Book Ticket");
+            System.out.println("2. Cancel Ticket");
+            System.out.println("3. Exit");
+            System.out.print("Enter choice: ");
+
+            choice = getIntInput();
+
+            switch (choice) {
+                case 1:
+                    bookTicket();
+                    break;
+                case 2:
+                    cancelTicket();
+                    break;
+                case 3:
+                    System.out.println("Thank you for using the system.");
+                    break;
+                default:
+                    System.out.println("Invalid option.");
+            }
+        } while (choice != 3);
+    }
+
+    // LOGIN
+    static boolean login() {
+        System.out.print("Login ID: ");
+        String id = sc.nextLine();
+
+        System.out.print("Password: ");
+        String pass = sc.nextLine();
+
+        return id.equals(LOGIN_ID) && pass.equals(PASSWORD);
+    }
+
+    // BOOK TICKET
+    static void bookTicket() {
+
+        System.out.print("Passenger Name: ");
+        String name = sc.nextLine();
+
+        System.out.print("Age: ");
+        int age = getIntInput();
+        if (age <= 0) {
+            System.out.println("Invalid age.");
+            return;
+        }
+
+        System.out.print("Train Number (101–105): ");
+        String trainNo = sc.nextLine();
+        String trainName = getTrainName(trainNo);
+
+        if (trainName.equals("Unknown")) {
+            System.out.println("Invalid Train Number.");
+            return;
+        }
+
+        System.out.println("Train Name: " + trainName);
+
+        System.out.print("Class Type: ");
+        String classType = sc.nextLine();
+
+        System.out.print("Journey Date (dd-mm-yyyy): ");
+        String journeyDate = sc.nextLine();
+
+        System.out.println("\nAvailable Destinations:");
+        for (String d : destinations) {
+            System.out.println("- " + d);
+        }
+
+        System.out.print("Source: ");
+        String source = sc.nextLine();
+
+        System.out.print("Destination: ");
+        String destination = sc.nextLine();
+
+        if (!isValidDestination(source) || !isValidDestination(destination)) {
+            System.out.println("Invalid destination.");
+            return;
+        }
+
+        if (source.equalsIgnoreCase(destination)) {
+            System.out.println("Source and destination cannot be same.");
+            return;
+        }
+
+        String pnr = "PNR" + pnrCounter++;
+
+        TicketReservation ticket = new TicketReservation(
+                pnr, name, age, trainNo, trainName,
+                classType, journeyDate, source, destination
+        );
+
+        database.put(pnr, ticket);
+
+        System.out.println("\nTicket Booked Successfully.");
+        System.out.println("PNR Number: " + pnr);
+    }
+
+    // CANCEL TICKET
+    static void cancelTicket() {
+        System.out.print("Enter PNR Number: ");
+        String pnr = sc.nextLine();
+
+        TicketReservation t = database.get(pnr);
+
+        if (t == null) {
+            System.out.println("PNR not found.");
+            return;
+        }
+
+        System.out.println("\n--- Ticket Details ---");
+        System.out.println("Passenger: " + t.passengerName);
+        System.out.println("Train: " + t.trainNo + " - " + t.trainName);
+        System.out.println("Class: " + t.classType);
+        System.out.println("Date: " + t.journeyDate);
+        System.out.println("From: " + t.source);
+        System.out.println("To: " + t.destination);
+
+        System.out.print("\nConfirm cancellation (yes/no): ");
+        String confirm = sc.nextLine();
+
+        if (confirm.equalsIgnoreCase("yes")) {
+            database.remove(pnr);
+            System.out.println("Ticket Cancelled Successfully.");
+        } else {
+            System.out.println("Cancellation Aborted.");
+        }
+    }
+
+    // TRAIN NAME MAPPING
+    static String getTrainName(String trainNo) {
+        switch (trainNo) {
+            case "101":
+                return "Deccan Express";
+            case "102":
+                return "Intercity Express";
+            case "103":
+                return "Maharashtra Express";
+            case "104":
+                return "Sahyadri Express";
+            case "105":
+                return "Konkan Express";
+            default:
+                return "Unknown";
+        }
+    }
+
+    // DESTINATION VALIDATION
+    static boolean isValidDestination(String place) {
+        for (String d : destinations) {
+            if (d.equalsIgnoreCase(place)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // SAFE INTEGER INPUT
+    static int getIntInput() {
+        try {
+            return Integer.parseInt(sc.nextLine());
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+}
+a
